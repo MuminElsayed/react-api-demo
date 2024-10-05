@@ -1,18 +1,54 @@
 import { useEffect, useState } from "react";
-import { getPosts } from "../services/postService";
+import { deletePost, getPosts } from "../services/postService";
+import PostForm from "./PostForm";
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
+  const [editingPost, setEditingPost] = useState(null);
 
   useEffect(() => {
     getPosts()
       .then((result) => {
-        console.log(result);
+        setPosts(result.data);
       })
       .catch((err) => {
         console.log(err);
       });
   }, []);
 
-  return <></>;
+  const handleDelete = (id) => {
+    deletePost(id)
+      .then(() => {
+        setPosts(posts.filter((post) => post.id !== id));
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
+
+  const startEditing = (post) => {
+    setEditingPost(post);
+  };
+
+  return (
+    <div>
+      <PostForm
+        posts={posts}
+        setPosts={setPosts}
+        editingPost={editingPost}
+        setEditingPost={setEditingPost}
+      ></PostForm>
+      <h1>Posts</h1>
+      <ul>
+        {posts.map((post) => (
+          <li key={post.id}>
+            <h2>{post.title}</h2>
+            <p>{post.body}</p>
+            <button onClick={() => startEditing(post)}>Edit Post</button>
+            <button onClick={() => handleDelete(post.id)}>Delete Post</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
